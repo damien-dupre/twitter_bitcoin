@@ -35,7 +35,10 @@ data_day <- data_raw %>%
   dplyr::summarize(amount = sum(n)) %>%
   tidyr::complete(day = seq.Date(first_date, last_date, by="day")) %>% 
   dplyr::mutate(amount = tidyr::replace_na(amount, 0))
-# data -------------------------------------------------------------------------
+
+# readr::write_rds(data_day, "data_day.rds")
+data_day <- readr::read_rds("data_day.rds")
+# plot -------------------------------------------------------------------------
 plot_day <- data_day %>%
   ggplot(aes(day, amount)) + 
   geom_point() +
@@ -47,10 +50,10 @@ plot_day <- data_day %>%
 ggplotly(plot_day)
 
 # SQL --------------------------------------------------------------------------
-sql <- "SELECT id, DATE(actor_postedTime) AS date_tweet, count(*) AS n
-        FROM `stable-plasma-690.Bitcoin_Blockchain.bitcoin_blockchain`
-        GROUP BY id, DATE(actor_postedTime);"
-
-tb <- bq_project_query(config::get("dcu_bigquery")$billing, sql)
-
-bq_table_download(tb, max_results = 10)
+# sql <- "SELECT id, DATE(actor_postedTime) AS date_tweet, count(*) AS n
+#         FROM `stable-plasma-690.Bitcoin_Blockchain.bitcoin_blockchain`
+#         GROUP BY id, DATE(actor_postedTime);"
+# 
+# tb <- bq_project_query(config::get("dcu_bigquery")$billing, sql)
+# 
+# data_day <- bq_table_download(tb) # too long
