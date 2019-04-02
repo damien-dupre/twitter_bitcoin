@@ -15,12 +15,13 @@ con <- DBI::dbConnect(bigquery(),
 bitcoin_blockchain <- con %>% tbl("bitcoin_blockchain")
 # data -------------------------------------------------------------------------
 data_raw <- bitcoin_blockchain %>%
-  dplyr::select(id,actor_postedTime) %>% 
+  dplyr::select(id,actor_postedTime, object_summary) %>% 
   dplyr::filter(!is.na(id)) %>%
   dplyr::filter(!is.na(actor_postedTime)) %>%
   collect()
 # data -------------------------------------------------------------------------
 data_raw <- data_raw %>% 
+  dplyr::filter(stringr::str_detect(object_summary, "bitcoin|Bitcoin")) %>% 
   janitor::remove_empty("cols") %>%
   janitor::clean_names() %>%
   dplyr::mutate(actor_posted_date = as.Date(actor_posted_time))%>% 
@@ -36,8 +37,8 @@ data_day <- data_raw %>%
   tidyr::complete(day = seq.Date(first_date, last_date, by="day")) %>% 
   dplyr::mutate(amount = tidyr::replace_na(amount, 0))
 
-# readr::write_rds(data_day, "data_day.rds")
-data_day <- readr::read_rds("data_day.rds")
+# readr::write_rds(data_day, "data/data_day.rds")
+data_day <- readr::read_rds("data/data_day.rds")
 # plot -------------------------------------------------------------------------
 plot_day <- data_day %>%
   ggplot(aes(day, amount)) + 
